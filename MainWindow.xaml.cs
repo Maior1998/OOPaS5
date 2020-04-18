@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using OOPaS5.Parser;
 
 namespace OOPaS5
 {
@@ -23,6 +24,8 @@ namespace OOPaS5
         public MainWindow()
         {
             InitializeComponent();
+            XmlEGP egp = new XmlEGP();
+            egp.GetInfo();
         }
     }
 }

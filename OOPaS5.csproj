@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="Parser\EGP.cs" />
     <Compile Include="Parser\Parser.cs" />
+    <Compile Include="Parser\XmlEGP.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -97,10 +98,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="sources\source.html" />
+    <Content Include="sources\source.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="sources\source.xml" />
+    <Content Include="sources\source.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
