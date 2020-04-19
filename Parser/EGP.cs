@@ -11,33 +11,16 @@ namespace OOPaS5.Parser
     /// <summary>
     /// Программа телепередач.
     /// </summary>
-    public abstract partial class EGP
+    public abstract class EGP
     {
         public TvStreamInfo[] GetInfo()
         {
-            string data = GatherData();
+            dynamic data = GatherData();
             TvStreamInfo[] res = ProcessData(data);
             return res;
         }
-
-        private static string ChoosePath()
-        {
-            OpenFileDialog file = new OpenFileDialog()
-            {
-                Title = "Choose source file",
-                InitialDirectory = Directory.GetCurrentDirectory()
-            };
-            file.ShowDialog();
-            return file.FileName;
-        }
-        private static string GatherData()
-        {
-            string filePath = ChoosePath();
-            return File.ReadAllText(filePath);
-        }
-
         
-
-        protected abstract TvStreamInfo[] ProcessData(string source);
+        protected abstract object GatherData();
+        protected abstract TvStreamInfo[] ProcessData(object source);
     }
 }

@@ -27,7 +27,7 @@ namespace OOPaS5
             InitializeComponent();
             Stopwatch watch = new Stopwatch();
             watch.Start();
-            XmlEGP egp = new XmlEGP();
+            HtmlEGP egp = new HtmlEGP();
             egp.GetInfo();
             watch.Stop();
             Console.WriteLine($"{watch.ElapsedMilliseconds/1000.0} seconds");

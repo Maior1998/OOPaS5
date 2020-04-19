@@ -1,20 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Win32;
 
 namespace OOPaS5.Parser
 {
     public class XmlEGP : EGP
     {
-        protected override TvStreamInfo[] ProcessData(string source)
+        protected override object GatherData()
         {
-            XDocument doc = XDocument.Parse(source);
+            string filePath = ChoosePath();
+            return File.ReadAllText(filePath);
+        }
+        private static string ChoosePath()
+        {
+            OpenFileDialog file = new OpenFileDialog()
+            {
+                Title = "Choose source file",
+                InitialDirectory = Directory.GetCurrentDirectory()
+            };
+            file.ShowDialog();
+            return file.FileName;
+        }
+        protected override TvStreamInfo[] ProcessData(object source)
+        {
+            XDocument doc = XDocument.Parse(source.ToString());
             XElement nodePointer = doc.Root;
-            
+
             IEnumerable<XElement> channelsNodes = nodePointer.Descendants(XName.Get("channel"));
             IEnumerable<XElement> programmsNodes = nodePointer.Descendants(XName.Get("programme"));
             List<TvStreamInfo> channels = new List<TvStreamInfo>();
@@ -30,11 +47,11 @@ namespace OOPaS5.Parser
                     .Where(elem =>
                         int.Parse(elem.Attribute(XName.Get("channel")).Value) == currenTvStreamInfo.channelId)
                     .ToArray();
-                currenTvStreamInfo.records=new TvShow[currChanelShows.Count()];
+                currenTvStreamInfo.records = new TvShow[currChanelShows.Count()];
                 int i = 0;
                 foreach (XElement currChanelShow in currChanelShows)
                 {
-                    currenTvStreamInfo.records[i]=new TvShow()
+                    currenTvStreamInfo.records[i] = new TvShow()
                     {
                         startTime = ParseTime(currChanelShow.Attribute(XName.Get("start")).Value),
                         endTime = ParseTime(currChanelShow.Attribute(XName.Get("stop")).Value)
