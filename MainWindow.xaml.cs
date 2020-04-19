@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,8 +25,12 @@ namespace OOPaS5
         public MainWindow()
         {
             InitializeComponent();
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
             XmlEGP egp = new XmlEGP();
             egp.GetInfo();
+            watch.Stop();
+            Console.WriteLine($"{watch.ElapsedMilliseconds/1000.0} seconds");
         }
     }
 }
