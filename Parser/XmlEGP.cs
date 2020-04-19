@@ -12,6 +12,7 @@ namespace OOPaS5.Parser
 {
     public class XmlEGP : EGP
     {
+        
         protected override object GatherData()
         {
             string filePath = ChoosePath();

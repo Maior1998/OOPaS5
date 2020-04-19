@@ -1,41 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 
 namespace OOPaS5.Parser
 {
-    public class HtmlEGP : EGP
+    public partial class HtmlEGP : EGP
     {
         private const string BaseUrl = "https://tv.mail.ru";
-        private const int PauseTimeout = 500;
+        private const int PauseTimeout = 200;
         private static readonly HtmlParser parser = new HtmlParser();
+
+        private HtmlDataProvider provider;
+        public HtmlEGP(HtmlDataProvider provider)
+        {
+            this.provider = provider;
+        }
+
         protected override object GatherData()
         {
-            string[] links = GetAllLinks(GetHtml(BaseUrl));
-            Dictionary<int,string> res=new Dictionary<int, string>();
-            foreach (string link in links)
-            {
-                string buffer = GetHtml(BaseUrl + link);
-                IHtmlDocument doc = parser.ParseDocument(buffer);
-                int id = int.Parse(linksRegex.Match(doc.QuerySelector("link").GetAttribute("href")).Groups[1].Value);
-                res.Add(id,buffer);
-            }
-            return res;
+            return provider.GetData();
         }
 
         protected override TvStreamInfo[] ProcessData(object source)
         {
-            Dictionary<int, string> sourceDictionary = (Dictionary<int, string>) source;
-            TvStreamInfo[] res = sourceDictionary.Select(pair=>new TvStreamInfo(){channelId = pair.Key}).ToArray();
+            Dictionary<int, string> sourceDictionary = (Dictionary<int, string>)source;
+            TvStreamInfo[] res = sourceDictionary.Select(pair => new TvStreamInfo() { channelId = pair.Key }).ToArray();
             foreach (TvStreamInfo streamInfo in res)
             {
                 IHtmlDocument document = parser.ParseDocument(sourceDictionary[streamInfo.channelId]);
@@ -43,14 +38,17 @@ namespace OOPaS5.Parser
                     "[class=\"p-programms__item__time\"]");
                 IHtmlCollection<IElement> names = document.QuerySelectorAll(
                     "[class=\"p-programms__item__name\"]");
+                streamInfo.channelName = document
+                    .QuerySelector("[class=\"hdr__inner\"]")
+                    .TextContent.Split('—')[0].Trim();
                 int length = times.Length;
-                streamInfo.records=new TvShow[length];
+                streamInfo.records = new TvShow[length];
                 for (int j = 0; j < length; j++)
                 {
-                    streamInfo.records[j]=new TvShow()
+                    streamInfo.records[j] = new TvShow()
                     {
                         startTime = DateTime.Parse(times[j].TextContent),
-                        title=names[j].TextContent
+                        title = names[j].TextContent
                     };
                 }
             }
@@ -59,8 +57,9 @@ namespace OOPaS5.Parser
             {
                 for (int i = 0; i < streamInfo.records.Length - 1; i++)
                     streamInfo.records[i].endTime = streamInfo.records[i + 1].startTime;
-                streamInfo.records[streamInfo.records.Length - 1].endTime =
-                    streamInfo.records[streamInfo.records.Length - 1].startTime.AddHours(1);
+                if (streamInfo.records.Length != 0)
+                    streamInfo.records[streamInfo.records.Length - 1].endTime =
+                        streamInfo.records[streamInfo.records.Length - 1].startTime.AddHours(1);
             }
 
             return res;
@@ -76,14 +75,14 @@ namespace OOPaS5.Parser
             return content;
         }
 
-        private static readonly Regex linksRegex=new Regex(@"channel/(\d+)/");
+        private static readonly Regex linksRegex = new Regex(@"channel/(\d+)/");
         /// <summary>
         /// Extract all anchor tags using AngleSharp
         /// </summary>
         private static string[] GetAllLinks(string hmtlSource)
         {
             IHtmlDocument document = parser.ParseDocument(hmtlSource);
-            return document.QuerySelectorAll("a").Select(element => element.GetAttribute("href")).Where(link=>!(link is null) && linksRegex.IsMatch(link)).Distinct().ToArray();
+            return document.QuerySelectorAll("a").Select(element => element.GetAttribute("href")).Where(link => !(link is null) && linksRegex.IsMatch(link)).Distinct().ToArray();
         }
 
     }
